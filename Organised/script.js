@@ -230,13 +230,13 @@ function avgTasksPerDayLine(total) {
 /**
  * Dénominateur jauge « Monthly capacity » (somme des fréquences / ce max).
  * - Meals : 28 × 3 repas
- * - Cleanup : 28 (échelle simple : fréquence = fois sur 28 j. ; plusieurs cleanups/jour → jauge peut dépasser 100 %)
+ * - Cleanup : 28 − jours de repos (aligné au scheduler : au plus une grosse tâche / jour « actif »)
  * - Admin / exercise : jours actifs (1 occurrence max / jour)
  */
 function getSectionMax(section) {
     if (section === 'meals') return 84;
     if (section === 'cleanup') {
-        return 28;
+        return getWorkingDaysInMonth('cleanup');
     }
     if (section === 'admin' || section === 'exercise') {
         return getWorkingDaysInMonth(section);
