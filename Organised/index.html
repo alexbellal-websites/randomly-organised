@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+   
+    <title>Organised</title>
+</head>
+<body class="font-zalando overflow-x-hidden">
+
+    <!-- HEADER -->
+    <header class="site-header flex flex-wrap gap-3 items-center justify-between px-4 py-2.5 w-full">
+        <div class="title-header flex gap-3 items-baseline min-w-0 flex-1">
+            <h1 class="text-xl sm:text-3xl tracking-tight truncate">Randomly Organised</h1>
+            <!-- <p class="text-muted">Forget about it</p>     -->
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <button class="night-mode border border-slate-500 rounded-full px-3 py-1 text-sm" type="button" aria-label="Switch to day mode"><span class="night-mode-label">Night</span></button>
+            <button type="button" id="mobile-menu-toggle" class="mobile-menu-btn md:hidden flex items-center justify-center w-10 h-10 rounded-full border border-slate-500 bg-transparent" aria-label="Open menu" aria-expanded="false" aria-controls="main-nav">
+                <svg class="icon-open w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+                <svg class="icon-close hidden w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- LAYOUT -->
+    <section class="layout layout--main relative grid w-full">
+
+        <!-- confirm modal -->
+        <div class="confirm-modal fixed top-[50%] left-[50%] flex flex-col gap-6 rounded-2xl z-[110] shadow-2xl p-8 max-w-[calc(100vw-2rem)]">
+            <h2 class="flex gap-2 items-center text-2xl font-semibold border-b border-slate-400/20 pb-4">
+                  Confirm</h2>
+            <div class="body-modal flex flex-col gap-8">
+                <p class="text-modal mb-8">Do you want to delete this item?</p>
+                <div class="confirm-buttons-modal flex gap-4 w-full justify-end">
+                    <button class="cancel-btn-modal flex gap-1 items-center px-4 py-2 rounded-full transition-all duration-300 hover:ring-1 ring-white">
+                          Cancel</button>
+                    <button class="delete-btn-modal flex gap-1 items-center text-white bg-red-500 border border-red-500 px-4 py-2 rounded-full transition-all duration-300 hover:ring-1 ring-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                          </svg>Delete</button>
+                </div>
+            </div>
+        </div>
+        <!-- overlay -->
+        <div class="overlay absolute top-0 left-0 w-full h-full bg-slate-500/30 z-40 backdrop-blur-sm"></div>
+
+
+        <!-- SECTIONS -->
+        <main class="w-full">
+
+            <!-- DASHBOARD SECTION -->
+            <section id="dashboard" class="w-full p-8 hidden">
+                <div class="flex flex-col gap-8">
+
+                    <!-- top bar: title + global capacity -->
+                    <div class="dash-top flex items-start justify-between">
+                        <div>
+                            <h2 class="text-lg font-semibold">Overview</h2>
+                            <p class="text-muted text-xs">Monthly snapshot</p>
+                        </div>
+                        <div class="dash-global-capacity flex items-center gap-3">
+                            <span class="text-xs text-muted">Total load</span>
+                            <span class="capacity-num" id="dash-total-num"><span class="total-num-month">0</span>/<span class="total-max">84</span></span>
+                            <div class="gauge-track gauge-track--dash-total"><div class="gauge-fill" id="dash-total-fill" style="width:0%" data-section="total"></div></div>
+                        </div>
+                    </div>
+
+
+                    <!-- weekly balance -->
+                    <div class="dash-section">
+                        <div class="dash-section-header dash-balance-header">
+                            <div>
+                                <h3 class="text-sm font-semibold">Weekly balance</h3>
+                                <span class="text-xs text-muted">Tasks per day</span>
+                            </div>
+                            <div class="dash-balance-week-tools">
+                                <span class="dash-balance-week-label">Week</span>
+                                <div class="dash-balance-week-pills flex soft-contrast border-soft rounded-full p-0.5 gap-0.5">
+                                    <input type="radio" name="dash-balance-week" id="dash-bw-1" value="1" class="hidden peer/dbw1" checked>
+                                    <label for="dash-bw-1" class="dash-balance-week-num cursor-pointer rounded-full text-xs peer-checked/dbw1:bg-sky-200 peer-checked/dbw1:text-slate-900 dark:peer-checked/dbw1:bg-sky-600 dark:peer-checked/dbw1:text-white">1</label>
+                                    <input type="radio" name="dash-balance-week" id="dash-bw-2" value="2" class="hidden peer/dbw2">
+                                    <label for="dash-bw-2" class="dash-balance-week-num cursor-pointer rounded-full text-xs peer-checked/dbw2:bg-sky-200 peer-checked/dbw2:text-slate-900 dark:peer-checked/dbw2:bg-sky-600 dark:peer-checked/dbw2:text-white">2</label>
+                                    <input type="radio" name="dash-balance-week" id="dash-bw-3" value="3" class="hidden peer/dbw3">
+                                    <label for="dash-bw-3" class="dash-balance-week-num cursor-pointer rounded-full text-xs peer-checked/dbw3:bg-sky-200 peer-checked/dbw3:text-slate-900 dark:peer-checked/dbw3:bg-sky-600 dark:peer-checked/dbw3:text-white">3</label>
+                                    <input type="radio" name="dash-balance-week" id="dash-bw-4" value="4" class="hidden peer/dbw4">
+                                    <label for="dash-bw-4" class="dash-balance-week-num cursor-pointer rounded-full text-xs peer-checked/dbw4:bg-sky-200 peer-checked/dbw4:text-slate-900 dark:peer-checked/dbw4:bg-sky-600 dark:peer-checked/dbw4:text-white">4</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dash-week-grid">
+                            <div class="dash-day-col">
+                                <div class="dash-day-bar-track"><div class="dash-day-bar" style="height:0%"></div></div>
+                                <span class="dash-day-label">Mon</span>
+                            </div>
+                            <div class="dash-day-col">
+                                <div class="dash-day-bar-track"><div class="dash-day-bar" style="height:0%"></div></div>
+                                <span class="dash-day-label">Tue</span>
+                            </div>
+                            <div class="dash-day-col">
+                                <div class="dash-day-bar-track"><div class="dash-day-bar" style="height:0%"></div></div>
+                                <span class="dash-day-label">Wed</span>
+                            </div>
+                            <div class="dash-day-col">
+                                <div class="dash-day-bar-track"><div class="dash-day-bar" style="height:0%"></div></div>
+                                <span class="dash-day-label">Thu</span>
+                            </div>
+                            <div class="dash-day-col">
+                                <div class="dash-day-bar-track"><div class="dash-day-bar" style="height:0%"></div></div>
+                                <span class="dash-day-label">Fri</span>
+                            </div>
+                            <div class="dash-day-col">
+                                <div class="dash-day-bar-track"><div class="dash-day-bar" style="height:0%"></div></div>
+                                <span class="dash-day-label">Sat</span>
+                            </div>
+                            <div class="dash-day-col">
+                                <div class="dash-day-bar-track"><div class="dash-day-bar" style="height:0%"></div></div>
+                                <span class="dash-day-label">Sun</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- category cards grid -->
+                    <div class="dash-grid">
+
+                        <!-- Meals card -->
+                        <div class="dash-card" data-section="meals">
+                            <div class="dash-card-header">
+                                <div class="dash-card-dot" style="background:#22d3ee"></div>
+                                <span class="dash-card-title">Meals</span>
+                                <div class="dash-card-cap">
+                                    <span class="capacity-num" id="dash-meals-num"><span class="meals-capacity">0</span>/<span class="meals-max">84</span></span>
+                                    <div class="gauge-track"><div class="gauge-fill" id="dash-meals-fill" style="width:0%" data-section="meals"></div></div>
+                                </div>
+                            </div>
+                            <div class="dash-card-body tags-area" id="dash-meals-tags"></div>
+                            <div class="dash-card-footer">
+                                <span class="dash-card-footer-hint">3 categories</span>
+                                <span class="dash-card-footer-detail">Breakfast / Lunch / Supper</span>
+                            </div>
+                        </div>
+
+                        <!-- Clean-up card -->
+                        <div class="dash-card" data-section="cleanup">
+                            <div class="dash-card-header">
+                                <div class="dash-card-dot" style="background:#60a5fa"></div>
+                                <span class="dash-card-title">Clean-up</span>
+                                <div class="dash-card-cap">
+                                    <span class="capacity-num" id="dash-cleanup-num"><span class="cleanup-capacity">0</span>/<span class="cleanup-max">28</span></span>
+                                    <div class="gauge-track"><div class="gauge-fill" id="dash-cleanup-fill" style="width:0%" data-section="cleanup"></div></div>
+                                </div>
+                            </div>
+                            <div class="dash-card-body tags-area" id="dash-cleanup-tags"></div>
+                            <div class="dash-card-footer">
+                                <span class="dash-card-footer-hint">3 levels</span>
+                                <span class="dash-card-footer-detail">Light / Medium / Harder</span>
+                            </div>
+                        </div>
+
+                        <!-- Admin card -->
+                        <div class="dash-card" data-section="admin">
+                            <div class="dash-card-header">
+                                <div class="dash-card-dot" style="background:#f59e0b"></div>
+                                <span class="dash-card-title">Admin</span>
+                                <div class="dash-card-cap">
+                                    <span class="capacity-num" id="dash-admin-num"><span class="admin-capacity">0</span>/<span class="admin-max">28</span></span>
+                                    <div class="gauge-track"><div class="gauge-fill" id="dash-admin-fill" style="width:0%" data-section="admin"></div></div>
+                                </div>
+                            </div>
+                            <div class="dash-card-body tags-area" id="dash-admin-tags"></div>
+                            <div class="dash-card-footer">
+                                <span class="dash-card-footer-hint">3 levels</span>
+                                <span class="dash-card-footer-detail">Light / Medium / Harder</span>
+                            </div>
+                        </div>
+
+                        <!-- Exercise card -->
+                        <div class="dash-card" data-section="exercise">
+                            <div class="dash-card-header">
+                                <div class="dash-card-dot" style="background:#14b8a6"></div>
+                                <span class="dash-card-title">Exercise</span>
+                                <div class="dash-card-cap">
+                                    <span class="capacity-num" id="dash-exercise-num"><span class="exercise-capacity">0</span>/<span class="exercise-max">28</span></span>
+                                    <div class="gauge-track"><div class="gauge-fill" id="dash-exercise-fill" style="width:20%"></div></div>
+                                </div>
+                            </div>
+                            <div class="dash-card-body tags-area" id="dash-exercise-tags"></div>
+                            <div class="dash-card-footer">
+                                <span class="dash-card-footer-hint">3 levels</span>
+                                <span class="dash-card-footer-detail">Light / Medium / Harder</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- active pairs + rest days (side by side) -->
+                    <div class="dash-pairs-rest-row">
+                        <div class="dash-section">
+                            <div class="dash-section-header">
+                                <div class="flex items-center gap-2">
+                                    <div class="dot inline-block w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                                    <h3 class="text-sm font-semibold">Active pairs</h3>
+                                </div>
+                                <span class="text-xs text-muted" id="dash-pairs-count">No pairs yet</span>
+                            </div>
+                            <div class="dash-pairs-grid" id="dash-pairs-list">
+                                <p class="text-xs text-muted">Add pairs from each section's settings to see them here.</p>
+                            </div>
+                        </div>
+
+                        <div class="dash-section">
+                            <div class="dash-section-header">
+                                <h3 class="text-sm font-semibold">Rest days</h3>
+                                <span class="text-xs text-muted">Per week, per category</span>
+                            </div>
+                            <div class="dash-rest-grid">
+                                <div class="dash-rest-row">
+                                    <div class="dash-rest-dot" style="background:#60a5fa"></div>
+                                    <span class="dash-rest-label">Clean-up</span>
+                                    <span class="dash-rest-value" id="dash-rest-cleanup">0 days</span>
+                                </div>
+                                <div class="dash-rest-row">
+                                    <div class="dash-rest-dot" style="background:#f59e0b"></div>
+                                    <span class="dash-rest-label">Admin</span>
+                                    <span class="dash-rest-value" id="dash-rest-admin" data-rest="admin">0 days</span>
+                                </div>
+                                <div class="dash-rest-row">
+                                    <div class="dash-rest-dot" style="background:#14b8a6"></div>
+                                    <span class="dash-rest-label">Exercise</span>
+                                    <span class="dash-rest-value" id="dash-rest-exercise" data-rest="exercise">0 days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            <!-- CALENDAR SECTION -->
+            <section id="calendar" class="flex flex-col gap-4 w-full p-8 hidden">
+
+                <!-- table -->
+                <div class="table-cal-frame flex flex-col gap-4 p-4 shadow">
+
+                    <!-- Week selector + generate -->
+                    <div class="week-selector flex flex-wrap gap-3 items-center justify-between">
+                        <div class="calendar-gen-toolbar flex flex-wrap items-center gap-3">
+                            <button type="button" id="btn-generate-month" class="btn-generate-calendar">
+                                Generate 4 weeks
+                            </button>
+                        </div>
+                        <div class="flex gap-2 items-center">
+                        <label class="text-sm">Week</label>
+                        <div class="flex soft-contrast border-soft rounded-full p-1 gap-1">
+                            <input type="radio" name="week-num" id="week-1" value="1" class="hidden peer/w1" checked>
+                            <label for="week-1" class="cursor-pointer px-3 py-1 rounded-full text-sm peer-checked/w1:bg-sky-200 peer-checked/w1:text-slate-900">1</label>
+                    
+                            <input type="radio" name="week-num" id="week-2" value="2" class="hidden peer/w2">
+                            <label for="week-2" class="cursor-pointer px-3 py-1 rounded-full text-sm peer-checked/w2:bg-sky-200 peer-checked/w2:text-slate-900">2</label>
+                    
+                            <input type="radio" name="week-num" id="week-3" value="3" class="hidden peer/w3">
+                            <label for="week-3" class="cursor-pointer px-3 py-1 rounded-full text-sm peer-checked/w3:bg-sky-200 peer-checked/w3:text-slate-900">3</label>
+                    
+                            <input type="radio" name="week-num" id="week-4" value="4" class="hidden peer/w4">
+                            <label for="week-4" class="cursor-pointer px-3 py-1 rounded-full text-sm peer-checked/w4:bg-sky-200 peer-checked/w4:text-slate-900">4</label>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- calendar -->
+                     <div class="table-wrapper overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th>Monday</th>
+                                <th>Tuesday</th>
+                                <th>Wednesday</th>
+                                <th>Thursday</th>
+                                <th>Friday</th>
+                                <th>Saturday</th>
+                                <th>Sunday</th>
+                            </tr>
+                            </thead>
+                            <tbody id="calendar-plan-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Preferences calendar -->
+                     <div class="preferences-wrapper flex w-full justify-start px-4 py-2">
+
+                        <div class="preferences-calendar flex flex-wrap flex-col gap-4 w-fit">
+
+                            <!-- rest option -->
+                            <div class="option-wrapper flex flex-col gap-4">
+                                <div class="pref-container flex flex-col gap-6 min-w-[160px] h-fit rounded-lg">
+                                    <!-- title -->
+                                    <div class="title-pref flex gap-2 text-sm cursor-pointer">
+                                        <h2 class="flex gap-2 items-center font-normal">Settings</h2>
+                                        <div class="show-more cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                            </svg>
+                                        </div>
+                                    </div>
+        
+                                    <!-- body -->
+                                    <div class="body-pref flex gap-6 hidden">
+        
+                                    <!-- REST SETTINGS -->
+                                    <div class="rest-settings flex flex-col gap-4 w-fit">
+                                        <div class="title-rest flex gap-2 items-start mb-2">
+                                            <div class="dot inline-block w-2 h-2 bg-rose-300 rounded-full translate-y-2"></div>
+                                            <div class="title flex flex-col gap-1">
+                                                <label class="text-sm flex gap-2 items-center">Rest time</label>
+                                                <p class="text-xs text-muted">How many days off a week?</p>
+                                            </div>
+                                        </div>
+    
+                                        <div class="pref-option flex items-center gap-4 w-full">
+                                            <label for="rest-cleanup" class="font-normal">Clean-up :</label>
+                                            <div class="freq-row">
+                                                <input id="rest-cleanup" type="number" min="0" max="7" placeholder="0" data-rest="cleanup">
+                                                <span>days</span>
+                                            </div>
+                                        </div>
+                                        <div class="pref-option flex items-center gap-4 w-full">
+                                            <label for="rest-admin" class="font-normal">Admin :</label>
+                                            <div class="freq-row">
+                                                <input id="rest-admin" type="number" min="0" max="7" placeholder="0" data-rest="admin">
+                                                <span>days</span>
+                                            </div>
+                                        </div>
+                                        <div class="pref-option flex items-center gap-4 w-full">
+                                            <label for="rest-exercise" class="font-normal">Exercise :</label>
+                                            <div class="freq-row">
+                                                <input id="rest-exercise" type="number" min="0" max="7" placeholder="0" data-rest="exercise">
+                                                <span>days</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Calendar export (.ics) — même cadre que Rest time -->
+                                    <div class="ical-settings rest-settings flex flex-col gap-4 w-full max-w-lg">
+                                        <div class="title-rest flex gap-2 items-start mb-2">
+                                            <div class="dot inline-block w-2 h-2 bg-sky-400 rounded-full translate-y-2"></div>
+                                            <div class="title flex flex-col gap-1">
+                                                <label class="text-sm flex gap-2 items-center font-normal">Calendar export</label>
+                                                <p class="text-xs text-muted">Add events to your phone calendar</p>
+                                            </div>
+                                        </div>
+                                        <div class="pref-option flex flex-wrap items-center gap-4 w-full">
+                                            <label for="ical-zone" class="text-sm">Week (timezone)</label>
+                                            <div class="freq-row ical-freq-row flex-1 min-w-0">
+                                                <select id="ical-zone" class="ical-zone-select w-full max-w-full" title="Which timezone to use for the first Monday of the plan">
+                                                    <option value="Europe/Paris">France · Paris</option>
+                                                    <option value="Europe/London">UK · London</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <button type="button" id="btn-export-ical" class="add-btn" title="Downloads a calendar file you can open to add events to your phone">
+                                            Upload to phone calendar
+                                        </button>
+                                    </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+    
+                    </div>
+                </div>
+
+
+                <!-- Légende calendrier (taille contrôlée en CSS, pas Tailwind text-*) -->
+                <div class="calendar-legend fixed flex flex-wrap items-center justify-end gap-1 bottom-3 right-3 max-w-[min(100%,calc(100vw-1rem))] z-10">
+                    <div class="hint-day-off calendar-legend-chip">Day off</div>
+                    <div class="hint-breakfast calendar-legend-chip">Breakfast</div>
+                    <div class="hint-lunch calendar-legend-chip">Lunch</div>
+                    <div class="hint-supper calendar-legend-chip">Supper</div>
+                </div>
+
+            </section>
+            <!-- MEALS SECTION -->
+            <section id="meals" class="w-full p-8 hidden">
+                <div class="flex flex-col gap-8">
+
+                    <!-- INGREDIENTS — masqué (non utilisé pour l’instant ; retirer `hidden` sur #ingredients-section-wrap pour réafficher) -->
+                    <div id="ingredients-section-wrap" class="hidden" aria-hidden="true">
+                    <div class="section-layout">
+                        <!-- form panel -->
+                        <div class="form-panel">
+                            <form class="flex flex-col gap-4" id="ingredient-form">
+                                <div class="field">
+                                    <label for="ingredient-input">Ingredient</label>
+                                    <input type="text" id="ingredient-input" placeholder="e.g. Tomatoes">
+                                </div>
+                                <div class="field">
+                                    <label for="ingredient-category">Category</label>
+                                    <select name="ingredient-category" id="ingredient-category">
+                                        <option value="">Pick one</option>
+                                        <option value="meat"      data-color="bg-pink-200">Meat</option>
+                                        <option value="fish"      data-color="bg-blue-200">Fish</option>
+                                        <option value="seafood"   data-color="bg-cyan-200">Seafood</option>
+                                        <option value="egg"       data-color="bg-yellow-200">Egg</option>
+                                        <option value="dairy"     data-color="bg-yellow-200">Dairy</option>
+                                        <option value="cheese"    data-color="bg-amber-200">Cheese</option>
+                                        <option value="bread"     data-color="bg-orange-200">Bread</option>
+                                        <option value="pasta"     data-color="bg-orange-200">Pasta</option>
+                                        <option value="rice"      data-color="bg-stone-200">Rice & Grains</option>
+                                        <option value="vegetable" data-color="bg-green-200">Vegetable</option>
+                                        <option value="fruit"     data-color="bg-pink-200">Fruit</option>
+                                        <option value="legume"    data-color="bg-lime-200">Legume</option>
+                                        <option value="nut"       data-color="bg-amber-200">Nuts & Seeds</option>
+                                        <option value="sauce"     data-color="bg-rose-200">Sauce & Condiment</option>
+                                        <option value="sweet"     data-color="bg-purple-200">Sweet</option>
+                                        <option value="junk"      data-color="bg-red-300">Junk</option>
+                                        <option value="drink"     data-color="bg-sky-200">Drink</option>
+                                        <option value="other"     data-color="bg-slate-200">Other</option>
+                                    </select>
+                                </div>
+                            </form>
+                            <button type="button" class="add-btn" id="ingredient-submit">Add ingredient</button>
+                        </div>
+                        <!-- list panel -->
+                        <div class="list-panel" data-section="ingredients">
+                            <div class="list-header">
+                                <span>Ingredients</span>
+                            </div>
+                            <div class="tags-area" id="ingredient-list">
+                                <button class="tag-pill tag-btn bg-red-200" data-category="vegetable">Tomatoes</button>
+                                <button class="tag-pill tag-btn bg-blue-200" data-category="cheese">Feta</button>
+                                <button class="tag-pill tag-btn bg-green-200" data-category="vegetable">Cucumber</button>
+                                <button class="tag-pill tag-btn bg-yellow-200" data-category="egg">Eggs</button>
+                                <button class="tag-pill tag-btn bg-orange-200" data-category="bread">Bread</button>
+                                <button class="tag-pill tag-btn bg-pink-200" data-category="meat">Chicken</button>
+                                <button class="tag-pill tag-btn bg-pink-200" data-category="meat">Beef</button>
+                                <button class="tag-pill tag-btn bg-green-200" data-category="vegetable">Avocados</button>
+                                <button class="tag-pill tag-btn bg-red-200" data-category="junk">Pizza</button>
+                                <button class="tag-pill tag-btn bg-yellow-200" data-category="pasta">Pasta</button>
+                                <button class="tag-pill tag-btn bg-blue-200" data-category="rice">Rice</button>
+                            </div>
+                            <div class="panel-footer">
+                                <p class="footer-hint">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    <span class="delete-hint-md">Double-click to delete</span><span class="delete-hint-mobile">Long press to delete</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ingredients settings depliant -->
+                    <div class="pref-container flex flex-col gap-6 min-w-[160px] h-fit rounded-lg">
+                        <div class="title-pref flex gap-2 text-sm cursor-pointer">
+                            <h2 class="flex gap-2 items-center font-normal">Ingredient settings</h2>
+                            <div class="show-more cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="body-pref flex gap-6 hidden">
+                            <div class="section-layout">
+                                <div class="form-panel">
+                                    <div class="flex gap-2 items-start mb-2">
+                                        <div class="dot inline-block w-2 h-2 bg-green-500 rounded-full translate-y-2 flex-shrink-0"></div>
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-sm">Pair ingredients</label>
+                                            <p class="text-xs text-muted">Avoid pairing similar proteins the same day</p>
+                                        </div>
+                                    </div>
+                                    <form class="flex flex-col gap-4">
+                                        <div class="field">
+                                            <label for="ingredient-pair-first">First</label>
+                                            <select id="ingredient-pair-first">
+                                                <option value="">Pick ingredient</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="ingredient-pair-second">Not with</label>
+                                            <select id="ingredient-pair-second">
+                                                <option value="">Pick ingredient</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="ingredient-pair-gap">Gap</label>
+                                            <div class="freq-row">
+                                                <input id="ingredient-pair-gap" type="number" min="1" max="14" placeholder="1">
+                                                <span>days apart</span>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <button type="button" class="add-btn" id="ingredient-pair-add">Add pair</button>
+                                </div>
+                                <div class="list-panel">
+                                    <div class="list-header">
+                                        <span>Active pairs</span>
+                                    </div>
+                                    <div class="flex flex-col gap-3" id="ingredient-pair-recap-list"></div>
+                                    <div class="panel-footer">
+                                        <p class="footer-hint">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                            <span class="delete-hint-md">Double-click pair to remove</span><span class="delete-hint-mobile">Long press pair to remove</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- MEALS -->
+                    <div class="section-layout">
+                        <!-- form panel -->
+                        <div class="form-panel">
+                            <form class="flex flex-col gap-4" id="meal-form">
+                                <div class="field">
+                                    <label for="meal-input">Meal</label>
+                                    <input type="text" id="meal-input" placeholder="e.g. Pasta Bolognese">
+                                </div>
+                                <div class="field">
+                                    <label for="meal-category">Category</label>
+                                    <select name="meal-category" id="meal-category">
+                                        <option value="">Pick one</option>
+                                        <option value="breakfast-meal" data-color="bg-amber-400">Breakfast</option>
+                                        <option value="lunch-meal"     data-color="bg-orange-600">Lunch</option>
+                                        <option value="supper-meal"    data-color="bg-green-700">Supper</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="meal-frequency">Frequency</label>
+                                    <div class="freq-row">
+                                        <input type="number" id="meal-frequency" min="1" max="28" placeholder="4">
+                                        <span>x per month</span>
+                                    </div>
+                                </div>
+                            </form>
+                            <button type="button" class="add-btn" id="meal-submit">Add meal</button>
+                        </div>
+                        <!-- list panel -->
+                        <div class="list-panel" data-section="meals">
+                            <div class="list-header">
+                                <span>Meals</span>
+                                <div class="capacity-block">
+                                    <span>Monthly capacity</span>
+                                    <span class="capacity-num"><span class="meals-capacity">0</span>/<span class="meals-max">84</span></span>
+                                    <div class="gauge-track"><div class="gauge-fill" style="width: 0%"></div></div>
+                                </div>
+                            </div>
+                            <div class="tags-area" id="meal-list">
+                                <button class="tag-pill tag-btn bg-amber-400" data-category="breakfast" data-frequency="6">Bread & butter</button>
+                                <button class="tag-pill tag-btn bg-orange-600" data-category="lunch" data-frequency="10">Pasta & sauce</button>
+                                <button class="tag-pill tag-btn bg-green-700" data-category="supper" data-frequency="14">Salad</button>
+                                <button class="tag-pill tag-btn bg-green-700" data-category="supper" data-frequency="15">Soup</button>
+                                <button class="tag-pill tag-btn bg-amber-400" data-category="breakfast" data-frequency="24">Fruits</button>
+                                <button class="tag-pill tag-btn bg-orange-600" data-category="lunch" data-frequency="6">Steak & Purée</button>
+                                <button class="tag-pill tag-btn bg-green-700" data-category="supper" data-frequency="10">Bruschietta</button>
+                                <button class="tag-pill tag-btn bg-amber-400" data-category="breakfast" data-frequency="6">Biscuits</button>
+                                <button class="tag-pill tag-btn bg-green-700" data-category="supper" data-frequency="1">Order out</button>
+                                <button class="tag-pill tag-btn bg-orange-600" data-category="lunch" data-frequency="2">Galettes</button>
+                                <button class="tag-pill tag-btn bg-green-700" data-category="supper" data-frequency="3">Potatoes & Meat</button>
+                                <button class="tag-pill tag-btn bg-orange-600" data-category="lunch" data-frequency="6">Chicken on Rice</button>
+                            </div>
+                            <div class="panel-footer">
+                                <p class="footer-hint">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    <span class="delete-hint-md">Double-click to delete</span><span class="delete-hint-mobile">Long press to delete</span>
+                                </p>
+                                <div class="switch-container flex items-center gap-2 text-sm">
+                                    <span>Show frequencies</span>
+                                    <label class="switch relative inline-block w-12 h-4 cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="absolute inset-0 bg-slate-600 rounded-full transition-all duration-300 peer-checked:bg-sky-400"></div>
+                                        <div class="switch-knob absolute top-0.5 left-1 w-4 h-3 bg-white rounded-full transition-transform duration-300"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- meal settings depliant -->
+                    <div class="pref-container flex flex-col gap-6 min-w-[160px] h-fit rounded-lg">
+                        <div class="title-pref flex gap-2 text-sm cursor-pointer">
+                            <h2 class="flex gap-2 items-center font-normal">Meal settings</h2>
+                            <div class="show-more cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="body-pref flex gap-6 hidden">
+                            <div class="section-layout">
+                                <div class="form-panel">
+                                    <div class="flex gap-2 items-start mb-2">
+                                        <div class="dot inline-block w-2 h-2 bg-green-500 rounded-full translate-y-2 flex-shrink-0"></div>
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-sm">Pair meals</label>
+                                            <p class="text-xs text-muted">Avoid similar meals the same day</p>
+                                        </div>
+                                    </div>
+                                    <form class="flex flex-col gap-4">
+                                        <div class="field">
+                                            <label for="meal-pair-first">First</label>
+                                            <select id="meal-pair-first">
+                                                <option value="">Pick meal</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="meal-pair-second">Not with</label>
+                                            <select id="meal-pair-second">
+                                                <option value="">Pick meal</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="meal-pair-gap">Gap</label>
+                                            <div class="freq-row">
+                                                <input id="meal-pair-gap" type="number" min="1" max="14" placeholder="1">
+                                                <span>days apart</span>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <button type="button" class="add-btn" id="meal-pair-add">Add pair</button>
+                                </div>
+                                <div class="list-panel">
+                                    <div class="list-header">
+                                        <span>Active pairs</span>
+                                    </div>
+                                    <div class="flex flex-col gap-3" id="meal-pair-recap-list"></div>
+                                    <div class="panel-footer">
+                                        <p class="footer-hint">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                            <span class="delete-hint-md">Double-click pair to remove</span><span class="delete-hint-mobile">Long press pair to remove</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            <!-- CLEAN-UP SECTION -->
+            <section id="cleanup" class="w-full p-8 hidden">
+                <div class="flex flex-col gap-8">
+
+                    <!-- tasks grid -->
+                    <div class="section-layout">
+
+                        <!-- form panel -->
+                        <div class="form-panel">
+                            <form class="flex flex-col gap-4" id="cleanup-form">
+                                <div class="field">
+                                    <label for="cleanup-input">Task</label>
+                                    <input type="text" id="cleanup-input" placeholder="e.g. Hoover">
+                                </div>
+                                <div class="field">
+                                    <label for="cleanup-category">Category</label>
+                                    <select name="cleanup-category" id="cleanup-category">
+                                        <option value="">Pick one</option>
+                                        <option value="light-work" data-color="bg-sky-400">Light work</option>
+                                        <option value="medium-work" data-color="bg-teal-500">Medium work</option>
+                                        <option value="harder-work" data-color="bg-blue-600">Harder work</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="cleanup-frequency">Frequency</label>
+                                    <div class="freq-row">
+                                        <input type="number" id="cleanup-frequency" min="1" max="200" placeholder="4">
+                                        <span>× per month</span>
+                                    </div>
+                                </div>
+                            </form>
+                            <button type="button" class="add-btn" id="cleanup-submit">Add task</button>
+                        </div>
+
+                        <!-- list panel -->
+                        <div class="list-panel" data-section="cleanup">
+
+                            <!-- header -->
+                            <div class="list-header">
+                                <span>Tasks</span>
+                                <div class="capacity-block">
+                                    <span>Monthly capacity</span>
+                                    <span class="capacity-num"><span class="cleanup-capacity">0</span>/<span class="cleanup-max">28</span></span>
+                                    <div class="gauge-track"><div class="gauge-fill" style="width: 43%" data-section="cleanup"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- tags -->
+                            <div class="tags-area" id="cleanup-list">
+                                <button class="tag-pill tag-btn bg-blue-600" data-category="harder-work" data-frequency="6">Hoover</button>
+                                <button class="tag-pill tag-btn bg-teal-500" data-category="medium-work" data-frequency="4">Surfaces</button>
+                                <button class="tag-pill tag-btn bg-sky-400" data-category="light-work" data-frequency="4">Mirror & Sinks</button>
+                                <button class="tag-pill tag-btn bg-teal-500" data-category="medium-work" data-frequency="4">Toilet</button>
+                                <button class="tag-pill tag-btn bg-sky-400" data-category="light-work" data-frequency="4">Bedding</button>
+                                <button class="tag-pill tag-btn bg-blue-600" data-category="harder-work" data-frequency="2">Mopping</button>
+                                <button class="tag-pill tag-btn bg-sky-400" data-category="light-work" data-frequency="8">Laundry</button>
+                                <button class="tag-pill tag-btn bg-sky-400" data-category="light-work" data-frequency="4">Bin</button>
+                                <button class="tag-pill tag-btn bg-teal-500" data-category="medium-work" data-frequency="1">Top cupboards</button>
+                                <button class="tag-pill tag-btn bg-sky-400" data-category="light-work" data-frequency="1">Glass dispensary</button>
+                                <button class="tag-pill tag-btn bg-teal-500" data-category="medium-work" data-frequency="2">Shower</button>
+                                <button class="tag-pill tag-btn bg-blue-600" data-category="harder-work" data-frequency="1">Windows</button>
+                            </div>
+
+                            <!-- footer -->
+                            <div class="panel-footer">
+                                <p class="footer-hint">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    <span class="delete-hint-md">Double-click to delete</span><span class="delete-hint-mobile">Long press to delete</span>
+                                </p>
+                                <div class="switch-container flex items-center gap-2 text-sm">
+                                    <span>Show frequencies</span>
+                                    <label class="switch relative inline-block w-12 h-4 cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="absolute inset-0 bg-slate-600 rounded-full transition-all duration-300 peer-checked:bg-sky-400"></div>
+                                        <div class="switch-knob absolute top-0.5 left-1 w-4 h-3 bg-white rounded-full transition-transform duration-300"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- settings depliant -->
+                    <div class="pref-container flex flex-col gap-6 min-w-[160px] h-fit rounded-lg">
+                        <div class="title-pref flex gap-2 text-sm cursor-pointer">
+                            <h2 class="flex gap-2 items-center font-normal">Settings</h2>
+                            <div class="show-more cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="body-pref flex gap-6 hidden">
+
+                            <!-- pair tasks -->
+                            <div class="section-layout">
+
+                                <!-- form panel -->
+                                <div class="form-panel">
+                                    <div class="flex gap-2 items-start mb-2">
+                                        <div class="dot inline-block w-2 h-2 bg-green-500 rounded-full translate-y-2 flex-shrink-0"></div>
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-sm">Pair tasks</label>
+                                            <p class="text-xs text-muted">Schedule one task after another.<br>Tasks with gap = 0 → do the same day (e.g. Hoover → Mopping).</p>
+                                        </div>
+                                    </div>
+                                    <form class="flex flex-col gap-4">
+                                        <div class="field">
+                                            <label for="pair-first">First</label>
+                                            <select id="pair-first">
+                                                <option value="">Pick task</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="pair-second">Then</label>
+                                            <select id="pair-second">
+                                                <option value="">Pick task</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="pair-gap">Gap</label>
+                                            <div class="freq-row">
+                                                <input id="pair-gap" type="number" min="0" max="14" placeholder="2">
+                                                <span>days later (0 = same day)</span>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <button type="button" class="add-btn" id="pair-add">Add pair</button>
+                                </div>
+
+                                <!-- recap panel -->
+                                <div class="list-panel">
+                                    <div class="list-header">
+                                        <span>Active pairs</span>
+                                    </div>
+                                    <div class="flex flex-col gap-3" id="pair-recap-list"></div>
+                                    <div class="panel-footer">
+                                        <p class="footer-hint">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                            <span class="delete-hint-md">Double-click pair to remove</span><span class="delete-hint-mobile">Long press pair to remove</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- rest days -->
+                            <div class="rest-settings flex flex-col gap-4 w-fit">
+                                <div class="title-rest flex gap-2 items-start mb-2">
+                                    <div class="dot inline-block w-2 h-2 bg-rose-300 rounded-full translate-y-2"></div>
+                                    <div class="title flex flex-col gap-1">
+                                        <label class="text-sm flex gap-2 items-center">Rest time</label>
+                                        <p class="text-xs text-muted">How many days off a week?</p>
+                                    </div>
+                                </div>
+                                <div class="pref-option flex items-center gap-4 w-full">
+                                    <label for="section-rest-cleanup" class="font-normal">Days :</label>
+                                    <div class="freq-row">
+                                        <input id="section-rest-cleanup" type="number" min="0" max="7" placeholder="0" data-rest="cleanup">
+                                        <span>days</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            <!-- ADMIN SECTION -->
+            <section id="admin" class="w-full p-8 hidden">
+                <div class="flex flex-col gap-8">
+
+                <div class="section-layout">
+
+                    <!-- form panel -->
+                    <div class="form-panel">
+                        <form class="flex flex-col gap-4" id="admin-form">
+                            <div class="field">
+                                <label for="admin-input">Task</label>
+                                <input type="text" id="admin-input" placeholder="e.g. Planning">
+                            </div>
+                            <div class="field">
+                                <label for="admin-category">Category</label>
+                                <select name="admin-category" id="admin-category">
+                                    <option value="">Pick one</option>
+                                    <option value="light-work" data-color="bg-orange-200">Light work</option>
+                                    <option value="medium-work" data-color="bg-yellow-400">Medium work</option>
+                                    <option value="harder-work" data-color="bg-orange-500">Harder work</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="admin-frequency">Frequency</label>
+                                <div class="freq-row">
+                                    <input type="number" id="admin-frequency" min="1" max="28" placeholder="2">
+                                    <span>x per month</span>
+                                </div>
+                            </div>
+                        </form>
+                        <button type="button" class="add-btn" id="admin-submit">Add task</button>
+                    </div>
+
+                    <!-- list panel -->
+                    <div class="list-panel" data-section="admin">
+
+                        <!-- header -->
+                        <div class="list-header">
+                            <span>Tasks</span>
+                            <div class="capacity-block">
+                                <span>Monthly capacity</span>
+                                <span class="capacity-num"><span class="admin-capacity">0</span>/<span class="admin-max">28</span></span>
+                                <div class="gauge-track"><div class="gauge-fill" style="width: 29%" data-section="admin"></div></div>
+                            </div>
+                        </div>
+
+                        <!-- tags -->
+                        <div class="tags-area" id="admin-list">
+                            <button class="tag-pill tag-btn bg-orange-500" data-category="harder-work" data-frequency="2">French Nationality</button>
+                            <button class="tag-pill tag-btn bg-yellow-400" data-category="medium-work" data-frequency="2">Planning</button>
+                            <button class="tag-pill tag-btn bg-yellow-400" data-category="medium-work" data-frequency="2">Pappers</button>
+                            <button class="tag-pill tag-btn bg-orange-200" data-category="light-work" data-frequency="2">Check subscriptions</button>
+                        </div>
+
+                        <!-- footer -->
+                        <div class="panel-footer">
+                            <p class="footer-hint">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <span class="delete-hint-md">Double-click to delete</span><span class="delete-hint-mobile">Long press to delete</span>
+                            </p>
+                            <div class="switch-container flex items-center gap-2 text-sm">
+                                <span>Show frequencies</span>
+                                <label class="switch relative inline-block w-12 h-4 cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="absolute inset-0 bg-slate-600 rounded-full transition-all duration-300 peer-checked:bg-sky-400"></div>
+                                    <div class="switch-knob absolute top-0.5 left-1 w-4 h-3 bg-white rounded-full transition-transform duration-300"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- settings depliant -->
+                <div class="pref-container flex flex-col gap-6 min-w-[160px] h-fit rounded-lg">
+                    <div class="title-pref flex gap-2 text-sm cursor-pointer">
+                        <h2 class="flex gap-2 items-center font-normal">Settings</h2>
+                        <div class="show-more cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="body-pref flex gap-6 hidden">
+                        <div class="section-layout">
+                            <div class="form-panel">
+                                <div class="flex gap-2 items-start mb-2">
+                                    <div class="dot inline-block w-2 h-2 bg-green-500 rounded-full translate-y-2 flex-shrink-0"></div>
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-sm">Pair tasks</label>
+                                        <p class="text-xs text-muted">Do one task before another</p>
+                                    </div>
+                                </div>
+                                <form class="flex flex-col gap-4">
+                                    <div class="field">
+                                        <label for="admin-pair-first">First</label>
+                                        <select id="admin-pair-first">
+                                            <option value="">Pick task</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label for="admin-pair-second">Then</label>
+                                        <select id="admin-pair-second">
+                                            <option value="">Pick task</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label for="admin-pair-gap">Gap</label>
+                                        <div class="freq-row">
+                                            <input id="admin-pair-gap" type="number" min="1" max="14" placeholder="2">
+                                            <span>days later</span>
+                                        </div>
+                                    </div>
+                                </form>
+                                <button type="button" class="add-btn" id="admin-pair-add">Add pair</button>
+                            </div>
+                            <div class="list-panel">
+                                <div class="list-header">
+                                    <span>Active pairs</span>
+                                </div>
+                                <div class="flex flex-col gap-3" id="admin-pair-recap-list"></div>
+                                <div class="panel-footer">
+                                    <p class="footer-hint">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <span class="delete-hint-md">Double-click pair to remove</span><span class="delete-hint-mobile">Long press pair to remove</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- rest days -->
+                        <div class="rest-settings flex flex-col gap-4 w-fit">
+                            <div class="title-rest flex gap-2 items-start mb-2">
+                                <div class="dot inline-block w-2 h-2 bg-rose-300 rounded-full translate-y-2"></div>
+                                <div class="title flex flex-col gap-1">
+                                    <label class="text-sm flex gap-2 items-center">Rest time</label>
+                                    <p class="text-xs text-muted">How many days off a week?</p>
+                                </div>
+                            </div>
+                            <div class="pref-option flex items-center gap-4 w-full">
+                                <label for="section-rest-admin" class="font-normal">Days :</label>
+                                <div class="freq-row">
+                                    <input id="section-rest-admin" type="number" min="0" max="7" placeholder="0" data-rest="admin">
+                                    <span>days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+            </section>
+            <!-- EXERCISE SECTION -->
+            <section id="exercise" class="w-full p-8 hidden">
+                <div class="flex flex-col gap-8">
+
+                <div class="section-layout">
+
+                    <!-- form panel -->
+                    <div class="form-panel">
+                        <form class="flex flex-col gap-4" id="exercise-form">
+                            <div class="field">
+                                <label for="exercise-input">Exercise</label>
+                                <input type="text" id="exercise-input" placeholder="e.g. Legs">
+                            </div>
+                            <div class="field">
+                                <label for="exercise-category">Category</label>
+                                <select name="exercise-category" id="exercise-category">
+                                    <option value="">Pick one</option>
+                                    <option value="light-work" data-color="bg-sky-400">Light work</option>
+                                    <option value="medium-work" data-color="bg-emerald-400">Medium work</option>
+                                    <option value="harder-work" data-color="bg-purple-500">Harder work</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="exercise-frequency">Frequency</label>
+                                <div class="freq-row">
+                                    <input type="number" id="exercise-frequency" min="1" max="28" placeholder="4">
+                                    <span>x per month</span>
+                                </div>
+                            </div>
+                        </form>
+                        <button type="button" class="add-btn" id="exercise-submit">Add exercise</button>
+                    </div>
+
+                    <!-- list panel -->
+                    <div class="list-panel" data-section="exercise">
+
+                        <!-- header -->
+                        <div class="list-header">
+                            <span>Exercises</span>
+                            <div class="capacity-block">
+                                <span>Monthly capacity</span>
+                                <span class="capacity-num"><span class="exercise-capacity">0</span>/<span class="exercise-max">28</span></span>
+                                <div class="gauge-track"><div class="gauge-fill" style="width: 57%" data-section="exercise"></div></div>
+                            </div>
+                        </div>
+
+                        <!-- tags -->
+                        <div class="tags-area" id="exercise-list">
+                            <button class="tag-pill tag-btn bg-purple-500" data-category="harder-work" data-frequency="4">Legs</button>
+                            <button class="tag-pill tag-btn bg-emerald-400" data-category="medium-work" data-frequency="4">Upper body</button>
+                            <button class="tag-pill tag-btn bg-emerald-400" data-category="medium-work" data-frequency="4">Static</button>
+                            <button class="tag-pill tag-btn bg-sky-400" data-category="light-work" data-frequency="4">Arms</button>
+                        </div>
+
+                        <!-- footer -->
+                        <div class="panel-footer">
+                            <p class="footer-hint">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <span class="delete-hint-md">Double-click to delete</span><span class="delete-hint-mobile">Long press to delete</span>
+                            </p>
+                            <div class="switch-container flex items-center gap-2 text-sm">
+                                <span>Show frequencies</span>
+                                <label class="switch relative inline-block w-12 h-4 cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="absolute inset-0 bg-slate-600 rounded-full transition-all duration-300 peer-checked:bg-sky-400"></div>
+                                    <div class="switch-knob absolute top-0.5 left-1 w-4 h-3 bg-white rounded-full transition-transform duration-300"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- settings depliant -->
+                <div class="pref-container flex flex-col gap-6 min-w-[160px] h-fit rounded-lg">
+                    <div class="title-pref flex gap-2 text-sm cursor-pointer">
+                        <h2 class="flex gap-2 items-center font-normal">Settings</h2>
+                        <div class="show-more cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="body-pref flex gap-6 hidden">
+                        <div class="section-layout">
+                            <div class="form-panel">
+                                <div class="flex gap-2 items-start mb-2">
+                                    <div class="dot inline-block w-2 h-2 bg-green-500 rounded-full translate-y-2 flex-shrink-0"></div>
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-sm">Pair exercises</label>
+                                        <p class="text-xs text-muted">Avoid working the same muscle groups back-to-back</p>
+                                    </div>
+                                </div>
+                                <form class="flex flex-col gap-4">
+                                    <div class="field">
+                                        <label for="exercise-pair-first">First</label>
+                                        <select id="exercise-pair-first">
+                                            <option value="">Pick exercise</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label for="exercise-pair-second">Not with</label>
+                                        <select id="exercise-pair-second">
+                                            <option value="">Pick exercise</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label for="exercise-pair-gap">Gap</label>
+                                        <div class="freq-row">
+                                            <input id="exercise-pair-gap" type="number" min="1" max="14" placeholder="1">
+                                            <span>days apart</span>
+                                        </div>
+                                    </div>
+                                </form>
+                                <button type="button" class="add-btn" id="exercise-pair-add">Add pair</button>
+                            </div>
+                            <div class="list-panel">
+                                <div class="list-header">
+                                    <span>Active pairs</span>
+                                </div>
+                                <div class="flex flex-col gap-3" id="exercise-pair-recap-list"></div>
+                                <div class="panel-footer">
+                                    <p class="footer-hint">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <span class="delete-hint-md">Double-click pair to remove</span><span class="delete-hint-mobile">Long press pair to remove</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- rest days -->
+                        <div class="rest-settings flex flex-col gap-4 w-fit">
+                            <div class="title-rest flex gap-2 items-start mb-2">
+                                <div class="dot inline-block w-2 h-2 bg-rose-300 rounded-full translate-y-2"></div>
+                                <div class="title flex flex-col gap-1">
+                                    <label class="text-sm flex gap-2 items-center">Rest time</label>
+                                    <p class="text-xs text-muted">How many days off a week?</p>
+                                </div>
+                            </div>
+                            <div class="pref-option flex items-center gap-4 w-full">
+                                <label for="section-rest-exercise" class="font-normal">Days :</label>
+                                <div class="freq-row">
+                                    <input id="section-rest-exercise" type="number" min="0" max="7" placeholder="0" data-rest="exercise">
+                                    <span>days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Mobile drawer backdrop (sous le nav en pile, au-dessus du contenu) -->
+        <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div>
+
+        <!-- NAV -->
+        <nav id="main-nav" class="nav-bar main-nav sticky top-0 relative w-[220px] h-screen p-6 border-r border-slate-400 pt-10">
+            <!-- shrink menu (desktop only) -->
+            <div class="menu-arrow menu-arrow-desktop absolute top-6 -right-3 rounded-full z-50" id="shrink-menu-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>                  
+            </div>
+            <!-- expand menu -->
+            <div class="menu-arrow menu-arrow-desktop absolute top-6 -right-3 rounded-full -z-50" id="expand-menu-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>                                   
+            </div>
+            <!-- menu items -->
+            <ul class="flex flex-col gap-6">
+    
+                <!-- dashboard -->
+                <li class="menu-i flex items-center gap-2 text-sky-500 transition-all duration-300 group" data-section="dashboard">
+                    <div class="flex gap-2 items-center  border border-slate-500/20 group-hover:bg-sky-100 group-hover:border-sky-200 p-2 rounded-full cursor-pointer">
+                        <div class="icon-menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                              </svg>
+                        </div>
+                        <div>Dashboard</div>
+                    </div>
+                </li>
+                <!-- calendar -->
+                <li class="menu-i flex items-center gap-2 text-rose-600 transition-all duration-300 group" data-section="calendar">
+                    <div class="flex gap-2 items-center border border-slate-500/20 group-hover:bg-rose-100 group-hover:border-rose-200 p-2 rounded-full cursor-pointer">
+                        <div class="icon-menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                            </svg>
+                        </div>
+                        <div>Calendar</div>
+                    </div>
+                </li>
+                <!-- meals -->
+                <li class="menu-i flex items-center gap-2 text-lime-500 transition-all duration-300 group" data-section="meals">
+                    <div class="flex gap-2 items-center  border border-slate-500/20 group-hover:bg-lime-100 group-hover:border-lime-200 p-2 rounded-full cursor-pointer">
+                        <div class="icon-menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
+                            </svg>
+                        </div>
+                        <div>Meals</div>
+                    </div>
+                </li>
+                <!-- clean up -->
+                <li class="menu-i flex items-center gap-2 text-blue-400 transition-all duration-300 group" data-section="cleanup">
+                    <div class="flex gap-2 items-center  border border-slate-500/20 group-hover:bg-blue-100 group-hover:border-blue-200 p-2 rounded-full cursor-pointer">
+                        <div class="icon-menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
+                            </svg>
+                        </div>
+                        <div>Clean up</div>
+                    </div>
+                </li>
+                <!-- admin -->
+                <li class="menu-i flex items-center gap-2 text-amber-500 transition-all duration-300 group" data-section="admin">
+                    <div class="flex gap-2 items-center  border border-slate-500/20 group-hover:bg-amber-100 group-hover:border-amber-200 p-2 rounded-full cursor-pointer">
+                        <div class="icon-menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                            </svg>
+                        </div>
+                        <div>Admin</div>
+                    </div>
+                </li>
+                <!-- exercise -->
+                <li class="menu-i flex items-center gap-2 text-teal-500 transition-all duration-300 group" data-section="exercise">
+                    <div class="flex gap-2 items-center  border border-slate-500/20 group-hover:bg-teal-100 group-hover:border-teal-200 p-2 rounded-full cursor-pointer">
+                        <div class="icon-menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                            </svg>
+                        </div>
+                        <div>Exercise</div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+    </section>
+
+    <script src="scheduler.js"></script>
+    <script src="pairs.js"></script>
+    <script src="ical-export.js"></script>
+    <script src="calendar.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
