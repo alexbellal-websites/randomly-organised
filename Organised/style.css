@@ -131,6 +131,16 @@ header {
     grid-row: 1;
 }
 
+/*
+ * La flèche shrink/expand est en -right-3 et déborde sur la colonne main.
+ * L’overlay du modal (.overlay, z-40) couvre toute la colonne 2 : sans z-index sur le nav,
+ * la moitié de la flèche se retrouve sous le voile.
+ * (Le modal reste au-dessus grâce à z-[110].)
+ */
+.layout.layout--main > .nav-bar.main-nav {
+    z-index: 50;
+}
+
 nav {
     font-weight: 600;
     background-color: var(--nav-bg);
@@ -1144,7 +1154,7 @@ label.switch .peer:checked + div + .switch-knob {
         width: min(288px, 88vw);
         height: 100dvh;
         height: 100vh;
-        z-index: 68;
+        z-index: 68 !important;
         transform: translateX(-100%);
         transition: transform 0.28s ease;
         box-shadow: 8px 0 24px rgb(0 0 0 / 0.12);

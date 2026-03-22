@@ -90,11 +90,94 @@ function attachFrequencyBadge(btn) {
         btn.dataset.frequency = String(clamped);
         updateSectionTotal();
         updateGlobalTotal();
+        addTagToArray();
     });
 
     btn.classList.add('relative');
     btn.appendChild(badge);
 }
+
+/** Persist tag lists so deletions/additions survive full page refresh */
+const LS_TAG_LISTS = 'organisedTagLists';
+const TAG_LIST_IDS = ['ingredient-list', 'meal-list', 'cleanup-list', 'admin-list', 'exercise-list'];
+
+function getTagPillLabel(btn) {
+    const parts = [];
+    for (const node of btn.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const t = node.textContent.trim();
+            if (t) parts.push(t);
+        }
+        if (node.nodeType === Node.ELEMENT_NODE && node.classList?.contains('frequency-badge')) {
+            break;
+        }
+    }
+    return parts.join(' ').trim();
+}
+
+function serializeTagPill(btn) {
+    syncTagPillTaskNames(btn);
+    const text = getTagPillLabel(btn) || (btn.dataset.taskName || '').trim();
+    const out = {
+        className: btn.className,
+        category: btn.dataset.category || '',
+        text,
+    };
+    if (btn.dataset.frequency !== undefined && btn.dataset.frequency !== '') {
+        out.frequency = btn.dataset.frequency;
+    }
+    return out;
+}
+
+function saveTagListsToStorage() {
+    const data = {};
+    TAG_LIST_IDS.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        data[id] = [...el.querySelectorAll('.tag-pill')].map(serializeTagPill);
+    });
+    try {
+        localStorage.setItem(LS_TAG_LISTS, JSON.stringify(data));
+    } catch (e) {
+        console.warn('Could not save tag lists', e);
+    }
+}
+
+function restoreTagListsFromStorage() {
+    try {
+        const raw = localStorage.getItem(LS_TAG_LISTS);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (!data || typeof data !== 'object') return;
+        TAG_LIST_IDS.forEach((id) => {
+            if (!Object.prototype.hasOwnProperty.call(data, id)) return;
+            const arr = data[id];
+            if (!Array.isArray(arr)) return;
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = '';
+            arr.forEach((item) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = item.className || 'tag-pill tag-btn';
+                if (item.category) btn.dataset.category = item.category;
+                if (item.frequency !== undefined && item.frequency !== '') {
+                    btn.dataset.frequency = String(item.frequency);
+                }
+                btn.textContent = item.text || '';
+                el.appendChild(btn);
+                if (btn.dataset.frequency !== undefined && btn.dataset.frequency !== '') {
+                    attachFrequencyBadge(btn);
+                }
+                syncTagPillTaskNames(btn);
+            });
+        });
+    } catch (e) {
+        console.warn('Could not restore tag lists', e);
+    }
+}
+
+restoreTagListsFromStorage();
 
 function getListTotal(list) {
     let sum = 0;
@@ -714,5 +797,6 @@ function addTagToArray() {
             });
         });
     });
+    saveTagListsToStorage();
     document.dispatchEvent(new CustomEvent('organised-tags-changed'));
 }
